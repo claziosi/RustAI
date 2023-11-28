@@ -10,7 +10,7 @@ async fn main() {
     std::io::stdin().read_line(&mut question).unwrap();
 
     // Call the ask_ai function and await its result
-    match ask_ai(&question, &true).await {
+    match ask_ai(&question).await {
         Ok(response) => {
             println!("AI response: {}", response)
         }
