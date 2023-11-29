@@ -15,7 +15,7 @@ async fn main() {
             println!("{:?}", response)
         }
         Err(e) => eprintln!("An error occurred: {}", e),
-    } 
+    }
 
     println!("Streamed version: ");
 

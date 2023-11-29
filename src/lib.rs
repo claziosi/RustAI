@@ -1,12 +1,12 @@
-#![allow(dead_code)]
-
 use std::{env, io};
-
 use anyhow::Result;
-use reqwest::{Client, header};
+use reqwest::Client;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::io::Write;
+
+//Constants
+const COMPLETION_URL: &str = "https://api.openai.com/v1/chat/completions";
 
 #[derive(Debug, Deserialize)]
 struct ChatChunkDelta {
@@ -15,31 +15,23 @@ struct ChatChunkDelta {
 
 #[derive(Debug, Deserialize)]
 struct ChatChunkChoice {
-    delta: ChatChunkDelta,
-    index: usize,
-    finish_reason: Option<String>,
+    delta: ChatChunkDelta
 }
 
 #[derive(Debug, Deserialize)]
 struct ChatCompletionChunk {
-    id: String,
-    object: String,
-    created: usize,
-    model: String,
     choices: Vec<ChatChunkChoice>,
 }
 
-// Text Completion with ChatGPT OpenAI API
+// Text Completion with ChatGPT OpenAI API (non-streaming)
 pub async fn ask_ai(question: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let api_key = env::var("OPENAI_API_KEY")?;
-    let endpoint_url = "https://api.openai.com/v1/chat/completions";
-
+    // Create a new HTTP client
     let client = Client::new();
 
     // Simplify request building with chained calls
     let response = client
-        .post(endpoint_url)
-        .bearer_auth(api_key)
+        .post(COMPLETION_URL)
+        .bearer_auth(env::var("OPENAI_API_KEY")?)
         .json(&json!({
            "model": "gpt-4-0613",
            "messages": [{"role": "user", "content": question}],
@@ -64,33 +56,28 @@ pub async fn ask_ai(question: &str) -> Result<String, Box<dyn std::error::Error>
     }
 }
 
+// Text Completion with ChatGPT OpenAI API (streaming)
 pub async fn ask_ai_streaming(question: &str) -> Result<()> {
-    let url = "https://api.openai.com/v1/chat/completions";
-    let api_key = env::var("OPENAI_API_KEY")?;
-
-    let body = json!({
-        "model": "gpt-4-0613",
-        "messages": [{
-            "role": "user",
-            "content": question
-        }],
-        "stream": true,
-    });
-
+    // Create a new HTTP client
     let client = Client::new();
 
-    let mut res = client
-        .post(url)
-        .json(&body)
-        .header(header::CONTENT_TYPE, "application/json")
-        .bearer_auth(api_key)
+    // Simplify request building with chained calls
+    let mut response = client
+        .post(COMPLETION_URL)
+        .bearer_auth(env::var("OPENAI_API_KEY")?)
+        .json(&json!({
+            "model": "gpt-4-0613",
+            "messages": [{"role": "user", "content": question}],
+            "temperature": 0.7,
+            "stream": true
+        }))
         .send()
         .await?;
 
     // Buffer for incomplete chunks
     let mut buffer = String::new();
 
-    while let Some(chunk) = res.chunk().await? {
+    while let Some(chunk) = response.chunk().await? {
         // Convert chunk bytes to string and add it to the buffer
         buffer.push_str(&String::from_utf8_lossy(&chunk));
 
@@ -124,24 +111,6 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
     Ok(())
 }
 
-fn parse_chunk(chunk: &[u8]) -> Result<Option<ChatCompletionChunk>> {
-    // Convert bytes to &str
-    let text_chunk = std::str::from_utf8(chunk)?;
-    print!("{}", text_chunk);
-    // Process each line separately to handle DONE signal and data chunks
-    for line in text_chunk.lines() {
-        // Check if we've reached the end of the stream
-        if line == "[DONE]" {
-            return Ok(None);
-        }
-
-        // Parse JSON data prefixed with 'data: '
-        if let Some(json_data) = line.strip_prefix("data: ") {
-            return Ok(Some(serde_json::from_str(json_data)?));
-        }
-    }
-    return Ok(None); // No relevant data in this chunk or not finished yet
-}
 
 #[cfg(test)]
 mod tests {
@@ -162,7 +131,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_ask_ai_streaming() {
-        let question = "Who is Charlemagne?";
+        let question = "Say just Hello";
         let is_answer_present = ask_ai_streaming(question).await.is_ok();
         assert_eq!(is_answer_present, true);
     }
