@@ -69,7 +69,7 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
     let api_key = env::var("OPENAI_API_KEY")?;
 
     let body = json!({
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4-0613",
         "messages": [{
             "role": "user",
             "content": question
