@@ -10,12 +10,12 @@ async fn main() {
     std::io::stdin().read_line(&mut question).unwrap();
 
     // Call the ask_ai function and await its result
-    /*     match ask_ai(&question).await {
+    match ask_ai(&question).await {
         Ok(response) => {
             println!("AI response: {:?}", response)
         }
         Err(e) => eprintln!("An error occurred: {}", e),
-    } */
+    } 
 
     // Call the ask_ai_streaming function and await its result
     match ask_ai_streaming(&question).await {

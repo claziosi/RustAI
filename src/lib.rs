@@ -3,7 +3,6 @@
 use std::{env, io};
 
 use anyhow::Result;
-use futures_util::StreamExt;
 use reqwest::{Client, header};
 use serde::Deserialize;
 use serde_json::{json, Value};
