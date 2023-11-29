@@ -23,7 +23,10 @@ struct ChatCompletionChunk {
     choices: Vec<ChatChunkChoice>,
 }
 
-// Text Completion with ChatGPT OpenAI API (non-streaming)
+/* 
+    Text Completion with ChatGPT OpenAI API (non-streaming)
+    This function takes a question as input and returns the answer from the AI.
+*/
 pub async fn ask_ai(question: &str) -> Result<String, Box<dyn std::error::Error>> {
     // Create a new HTTP client
     let client = Client::new();
@@ -56,7 +59,10 @@ pub async fn ask_ai(question: &str) -> Result<String, Box<dyn std::error::Error>
     }
 }
 
-// Text Completion with ChatGPT OpenAI API (streaming)
+/*
+    Text Completion with ChatGPT OpenAI API (streaming)
+    This function takes a question as input and returns the answer from the AI.
+*/
 pub async fn ask_ai_streaming(question: &str) -> Result<()> {
     // Create a new HTTP client
     let client = Client::new();
@@ -77,6 +83,7 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
     // Buffer for incomplete chunks
     let mut buffer = String::new();
 
+    // Read the response body as chunks
     while let Some(chunk) = response.chunk().await? {
         // Convert chunk bytes to string and add it to the buffer
         buffer.push_str(&String::from_utf8_lossy(&chunk));
@@ -89,6 +96,7 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
                 return Ok(());
             }
 
+            // Parse the line as JSON
             if let Some(json_data) = line.strip_prefix("data: ") {
                 match serde_json::from_str::<ChatCompletionChunk>(json_data) {
                     Ok(chat_chunk) => {
