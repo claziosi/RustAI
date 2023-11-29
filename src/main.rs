@@ -12,15 +12,17 @@ async fn main() {
     // Call the ask_ai function and await its result
     match ask_ai(&question).await {
         Ok(response) => {
-            println!("AI response: {:?}", response)
+            println!("{:?}", response)
         }
         Err(e) => eprintln!("An error occurred: {}", e),
     } 
 
+    println!("Streamed version: ");
+
     // Call the ask_ai_streaming function and await its result
     match ask_ai_streaming(&question).await {
         Ok(response) => {
-            println!("AI response: {:?}", response)
+            println!("{:?}", response)
         }
         Err(e) => eprintln!("An error occurred: {}", e),
     }

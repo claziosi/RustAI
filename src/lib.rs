@@ -87,8 +87,6 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
         .send()
         .await?;
 
-    println!("ChatGPT Says:\n");
-
     // Buffer for incomplete chunks
     let mut buffer = String::new();
 
@@ -101,7 +99,6 @@ pub async fn ask_ai_streaming(question: &str) -> Result<()> {
             let line = &buffer[..pos]; // Get one line from the buffer
 
             if line == "data: [DONE]" {
-                println!("\n[Done.]");
                 return Ok(());
             }
 
