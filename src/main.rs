@@ -1,4 +1,5 @@
-use lib_ai::{ask_ai, ask_ai_streaming};
+mod rust_ai;
+use crate::rust_ai::chat_completions::{ask_ai, ask_ai_streaming};
 use tokio;
 
 #[tokio::main]
