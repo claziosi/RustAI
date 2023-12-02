@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::{Path, PathBuf}, error::Error, fs::File, io::Write};
 
 use reqwest::{Client, multipart};
 use tokio;
@@ -10,9 +10,18 @@ struct TranscriptionResponse {
    text: String,
 }
 
+// Define a structure for the request body.
+#[derive(serde::Serialize)]
+struct TextToSpeechRequest {
+    model: String,
+    input: String,
+    voice: String,
+}
+
 const API_URL: &str = "https://api.openai.com/v1/audio/transcriptions";
 
-pub async fn transcription(file_path: &Path) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn speech_to_text(file_path: &Path) 
+-> Result<String, Box<dyn std::error::Error>> {
     let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
     let model_name = "whisper-1";
 
@@ -49,4 +58,40 @@ pub async fn transcription(file_path: &Path) -> Result<String, Box<dyn std::erro
     }
 }
 
+
+pub async fn text_to_speech(input_text: &str, voice: &str,
+) -> Result<PathBuf, Box<dyn Error>> {
+    
+    const API_URL: &str = "https://api.openai.com/v1/audio/speech";
+    let api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not set");
+
+    // Prepare the request body.
+    let body = TextToSpeechRequest {
+        model: "tts-1".to_string(),
+        input: input_text.to_string(),
+        voice: voice.to_string(),
+    };
+
+    // Create an HTTP client instance.
+    let client = Client::new();
+
+    // Perform the POST request.
+    let response_bytes = client
+        .post(API_URL)
+        .bearer_auth(api_key)
+        .json(&body)
+        .send()
+        .await?
+        .error_for_status()? // Ensure we have a successful response code (e.g., 2xx).
+        .bytes()
+        .await?;
+
+    // Write the received bytes into an MP3 file.
+    let output_path = PathBuf::from("speech.mp3");
+    let mut file = File::create(&output_path)?;
+    
+    file.write_all(&response_bytes)?;
+
+    Ok(output_path)
+}
 
