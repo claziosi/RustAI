@@ -1,5 +1,8 @@
 mod rust_ai;
-use crate::rust_ai::chat_completions::{ask_ai, ask_ai_streaming};
+use std::path::Path;
+
+use crate::rust_ai::chat::{ask_ai, ask_ai_streaming};
+use crate::rust_ai::audio::transcription;
 use tokio;
 
 #[tokio::main]
@@ -27,4 +30,14 @@ async fn main() {
         }
         Err(e) => eprintln!("An error occurred: {}", e),
     }
+
+    let file_path = Path::new("../python/question.m4a");
+
+    match transcription(&file_path).await {
+        Ok(response) => {
+            println!("{:?}", response)
+        }
+        Err(e) => eprintln!("An error occurred: {}", e),
+    }
+
 }
