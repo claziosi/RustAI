@@ -9,7 +9,7 @@ use tokio;
 async fn main() {
     // The question you want to ask the AI
     // Ask to enter a question
-/*     println!("Enter a question: ");
+    println!("Enter a question: ");
     let mut question = String::new();
     std::io::stdin().read_line(&mut question).unwrap();
 
@@ -31,14 +31,14 @@ async fn main() {
         Err(e) => eprintln!("An error occurred: {}", e),
     }
 
-    let file_path = Path::new("../python/question.m4a");
+    let file_path = Path::new("./python/question.m4a");
 
     match speech_to_text(&file_path).await {
         Ok(response) => {
             println!("{:?}", response)
         }
         Err(e) => eprintln!("An error occurred: {}", e),
-    } */
+    }
 
     // Call our function with example parameters.
     match text_to_speech("The quick brown fox jumped over the lazy dog.", "alloy").await {
