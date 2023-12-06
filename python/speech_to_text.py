@@ -8,7 +8,7 @@ client = OpenAI()
 # Load your API key from an environment variable or secret management service
 client.api_key = os.getenv("OPENAI_API_KEY");
 
-file = "question.m4a"
+file = "./media/question.m4a"
 audio_file= open(file, "rb")
 transcript = client.audio.transcriptions.create(
   model="whisper-1", 
